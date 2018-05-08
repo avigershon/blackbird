@@ -15,7 +15,7 @@ RUN apt-get update \
   g++ \
   && rm -rf /var/lib/apt/lists/*
 
-COPY . /blackbird
+COPY / /blackbird
 WORKDIR /blackbird
 
-make -B
+RUN make -B
