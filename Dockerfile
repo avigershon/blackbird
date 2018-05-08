@@ -16,8 +16,6 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY . /blackbird
-RUN git clone https://github.com/greatwolf/SQLite3.git /blackbird/extern/
-
 WORKDIR /blackbird
 
-RUN make -B
+make -B
