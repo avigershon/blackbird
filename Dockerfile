@@ -16,8 +16,8 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 COPY . /blackbird
+COPY ./extern /blackbird/extern
 
 WORKDIR /blackbird
 
-RUN cmake -B./build -H. -DCMAKE_BUILD_TYPE=Debug
-# RUN make -B
+RUN make -B
