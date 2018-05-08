@@ -19,4 +19,5 @@ COPY . /blackbird
 
 WORKDIR /blackbird
 
-RUN make -B
+RUN cmake -B./build -H. -DCMAKE_BUILD_TYPE=Debug
+# RUN make -B
