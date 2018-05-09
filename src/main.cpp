@@ -339,22 +339,22 @@ int main(int argc, char** argv) {
   std::ofstream logFile(logFileName, std::ofstream::trunc);
   logFile.imbue(mylocale);
   logFile.precision(2);
-  logFile << std::fixed;
+  std::cout << std::fixed;
   params.logFile = &logFile;
   // Log file header
-  logFile << "--------------------------------------------" << std::endl;
-  logFile << "|   Blackbird Bitcoin Arbitrage Log File   |" << std::endl;
-  logFile << "--------------------------------------------\n" << std::endl;
-  logFile << "Blackbird started on " << printDateTime() << "\n" << std::endl;
+  std::cout << "--------------------------------------------" << std::endl;
+  std::cout << "|   Blackbird Bitcoin Arbitrage Log File   |" << std::endl;
+  std::cout << "--------------------------------------------\n" << std::endl;
+  std::cout << "Blackbird started on " << printDateTime() << "\n" << std::endl;
 
-  logFile << "Connected to database \'" << params.dbFile << "\'\n" << std::endl;
+  std::cout << "Connected to database \'" << params.dbFile << "\'\n" << std::endl;
 
   if (params.demoMode) {
-    logFile << "Demo mode: trades won't be generated\n" << std::endl;
+    std::cout << "Demo mode: trades won't be generated\n" << std::endl;
   }
 
   // Shows which pair we are trading (BTC/USD only for the moment)
-  logFile << "Pair traded: " << params.leg1 << "/" << params.leg2 << "\n" << std::endl;
+  std::cout << "Pair traded: " << params.leg1 << "/" << params.leg2 << "\n" << std::endl;
 
   std::cout << "Log file generated: " << logFileName << "\nBlackbird is running... (pid " << getpid() << ")\n" << std::endl;
   int numExch = params.nbExch();
@@ -370,7 +370,7 @@ int main(int argc, char** argv) {
   // Inits cURL connections
   params.curl = curl_easy_init();
   // Shows the spreads
-  logFile << "[ Targets ]\n"
+  std::cout << "[ Targets ]\n"
           << std::setprecision(2)
           << "   Spread Entry:  " << params.spreadEntry * 100.0 << "%\n"
           << "   Spread Target: " << params.spreadTarget * 100.0  << "%\n";
@@ -378,13 +378,13 @@ int main(int argc, char** argv) {
   // SpreadEntry and SpreadTarget have to be positive,
   // Otherwise we will loose money on every trade.
   if (params.spreadEntry <= 0.0) {
-    logFile << "   WARNING: Spread Entry should be positive" << std::endl;
+    std::cout << "   WARNING: Spread Entry should be positive" << std::endl;
   }
   if (params.spreadTarget <= 0.0) {
-    logFile << "   WARNING: Spread Target should be positive" << std::endl;
+    std::cout << "   WARNING: Spread Target should be positive" << std::endl;
   }
-  logFile << std::endl;
-  logFile << "[ Current balances ]" << std::endl;
+  std::cout << std::endl;
+  std::cout << "[ Current balances ]" << std::endl;
   // Gets the the balances from every exchange
   // This is only done when not in Demo mode.
   std::vector<Balance> balance(numExch);
@@ -407,33 +407,33 @@ int main(int argc, char** argv) {
 
   // Writes the current balances into the log file
   for (int i = 0; i < numExch; ++i) {
-    logFile << "   " << params.exchName[i] << ":\t";
+    std::cout << "   " << params.exchName[i] << ":\t";
     if (params.demoMode) {
-      logFile << "n/a (demo mode)" << std::endl;
+      std::cout << "n/a (demo mode)" << std::endl;
     } else if (!params.isImplemented[i]) {
-      logFile << "n/a (API not implemented)" << std::endl;
+      std::cout << "n/a (API not implemented)" << std::endl;
     } else {
-      logFile << std::setprecision(2) << balance[i].leg2 << " " << params.leg2 << "\t"
+      std::cout << std::setprecision(2) << balance[i].leg2 << " " << params.leg2 << "\t"
               << std::setprecision(6) << balance[i].leg1 << " " << params.leg1 << std::endl;
     }
     if (balance[i].leg1 > 0.0050 && !inMarket) { // FIXME: hard-coded number
-      logFile << "ERROR: All " << params.leg1 << " accounts must be empty before starting Blackbird" << std::endl;
+      std::cout << "ERROR: All " << params.leg1 << " accounts must be empty before starting Blackbird" << std::endl;
       exit(EXIT_FAILURE);
     }
   }
-  logFile << std::endl;
-  logFile << "[ Cash exposure ]\n";
+  std::cout << std::endl;
+  std::cout << "[ Cash exposure ]\n";
   if (params.demoMode) {
-    logFile << "   No cash - Demo mode\n";
+    std::cout << "   No cash - Demo mode\n";
   } else {
     if (params.useFullExposure) {
-      logFile << "   FULL exposure used!\n";
+      std::cout << "   FULL exposure used!\n";
     } else {
-      logFile << "   TEST exposure used\n   Value: "
+      std::cout << "   TEST exposure used\n   Value: "
               << std::setprecision(2) << params.testedExposure << '\n';
     }
   }
-  logFile << std::endl;
+  std::cout << std::endl;
   // Code implementing the loop function, that runs
   // every 'Interval' seconds.
   time_t rawtime = time(nullptr);
@@ -448,7 +448,7 @@ int main(int argc, char** argv) {
     timeinfo = *localtime(&rawtime);
   }
   if (!params.verbose) {
-    logFile << "Running..." << std::endl;
+    std::cout << "Running..." << std::endl;
   }
 
   int resultId = 0;
@@ -466,20 +466,20 @@ int main(int argc, char** argv) {
     // If that's the case we wait until the next iteration
     // and we show a warning in the log file.
     if (diffTime > 0) {
-      logFile << "WARNING: " << diffTime << " second(s) too late at " << printDateTime(currTime) << std::endl;
+      std::cout << "WARNING: " << diffTime << " second(s) too late at " << printDateTime(currTime) << std::endl;
       timeinfo.tm_sec += (ceil(diffTime / params.interval) + 1) * params.interval;
       currTime = mktime(&timeinfo);
       sleep_for(secs(params.interval - (diffTime % params.interval)));
-      logFile << std::endl;
+      std::cout << std::endl;
     } else if (diffTime < 0) {
       sleep_for(secs(-diffTime));
     }
     // Header for every iteration of the loop
     if (params.verbose) {
       if (!inMarket) {
-        logFile << "[ " << printDateTime(currTime) << " ]" << std::endl;
+        std::cout << "[ " << printDateTime(currTime) << " ]" << std::endl;
       } else {
-        logFile << "[ " << printDateTime(currTime) << " IN MARKET: Long " << res.exchNameLong << " / Short " << res.exchNameShort << " ]" << std::endl;
+        std::cout << "[ " << printDateTime(currTime) << " IN MARKET: Long " << res.exchNameLong << " / Short " << res.exchNameShort << " ]" << std::endl;
       }
     }
     // Gets the bid and ask of all the exchanges
@@ -494,14 +494,14 @@ int main(int argc, char** argv) {
       // If there is an error with the bid or ask (i.e. value is null),
       // we show a warning but we don't stop the loop.
       if (bid == 0.0) {
-        logFile << "   WARNING: " << params.exchName[i] << " bid is null" << std::endl;
+        std::cout << "   WARNING: " << params.exchName[i] << " bid is null" << std::endl;
       }
       if (ask == 0.0) {
-        logFile << "   WARNING: " << params.exchName[i] << " ask is null" << std::endl;
+        std::cout << "   WARNING: " << params.exchName[i] << " ask is null" << std::endl;
       }
       // Shows the bid/ask information in the log file
       if (params.verbose) {
-        logFile << "   " << params.exchName[i] << ": \t"
+        std::cout << "   " << params.exchName[i] << ": \t"
                 << std::setprecision(2)
                 << bid << " / " << ask << std::endl;
       }
@@ -510,7 +510,7 @@ int main(int argc, char** argv) {
       curl_easy_reset(params.curl);
     }
     if (params.verbose) {
-      logFile << "   ----------------------------" << std::endl;
+      std::cout << "   ----------------------------" << std::endl;
     }
     // Stores all the spreads in arrays to
     // compute the volatility. The volatility
@@ -542,15 +542,15 @@ int main(int argc, char** argv) {
               // An entry opportunity has been found!
               res.exposure = std::min(balance[res.idExchLong].leg2, balance[res.idExchShort].leg2);
               if (params.demoMode) {
-                logFile << "INFO: Opportunity found but no trade will be generated (Demo mode)" << std::endl;
+                std::cout << "INFO: Opportunity found but no trade will be generated (Demo mode)" << std::endl;
                 break;
               }
               if (res.exposure == 0.0) {
-                logFile << "WARNING: Opportunity found but no cash available. Trade canceled" << std::endl;
+                std::cout << "WARNING: Opportunity found but no cash available. Trade canceled" << std::endl;
                 break;
               }
               if (params.useFullExposure == false && res.exposure <= params.testedExposure) {
-                logFile << "WARNING: Opportunity found but no enough cash. Need more than TEST cash (min. $"
+                std::cout << "WARNING: Opportunity found but no enough cash. Need more than TEST cash (min. $"
                         << std::setprecision(2) << params.testedExposure << "). Trade canceled" << std::endl;
                 break;
               }
@@ -559,7 +559,7 @@ int main(int argc, char** argv) {
                 // a little bit of margin.
                 res.exposure -= 0.01 * res.exposure;
                 if (res.exposure > params.maxExposure) {
-                  logFile << "WARNING: Opportunity found but exposure ("
+                  std::cout << "WARNING: Opportunity found but exposure ("
                           << std::setprecision(2)
                           << res.exposure << ") above the limit\n"
                           << "         Max exposure will be used instead (" << params.maxExposure << ")" << std::endl;
@@ -575,18 +575,18 @@ int main(int argc, char** argv) {
               double limPriceLong = getLimitPrice[res.idExchLong](params, volumeLong, false);
               double limPriceShort = getLimitPrice[res.idExchShort](params, volumeShort, true);
               if (limPriceLong == 0.0 || limPriceShort == 0.0) {
-                logFile << "WARNING: Opportunity found but error with the order books (limit price is null). Trade canceled\n";
+                std::cout << "WARNING: Opportunity found but error with the order books (limit price is null). Trade canceled\n";
                 logFile.precision(2);
-                logFile << "         Long limit price:  " << limPriceLong << std::endl;
-                logFile << "         Short limit price: " << limPriceShort << std::endl;
+                std::cout << "         Long limit price:  " << limPriceLong << std::endl;
+                std::cout << "         Short limit price: " << limPriceShort << std::endl;
                 res.trailing[res.idExchLong][res.idExchShort] = -1.0;
                 break;
               }
               if (limPriceLong - res.priceLongIn > params.priceDeltaLim || res.priceShortIn - limPriceShort > params.priceDeltaLim) {
-                logFile << "WARNING: Opportunity found but not enough liquidity. Trade canceled\n";
+                std::cout << "WARNING: Opportunity found but not enough liquidity. Trade canceled\n";
                 logFile.precision(2);
-                logFile << "         Target long price:  " << res.priceLongIn << ", Real long price:  " << limPriceLong << std::endl;
-                logFile << "         Target short price: " << res.priceShortIn << ", Real short price: " << limPriceShort << std::endl;
+                std::cout << "         Target long price:  " << res.priceLongIn << ", Real long price:  " << limPriceLong << std::endl;
+                std::cout << "         Target short price: " << res.priceShortIn << ", Real short price: " << limPriceShort << std::endl;
                 res.trailing[res.idExchLong][res.idExchShort] = -1.0;
                 break;
               }
@@ -606,7 +606,7 @@ int main(int argc, char** argv) {
               // Send the orders to the two exchanges
               auto longOrderId = sendLongOrder[res.idExchLong](params, "buy", volumeLong, limPriceLong);
               auto shortOrderId = sendShortOrder[res.idExchShort](params, "sell", volumeShort, limPriceShort);
-              logFile << "Waiting for the two orders to be filled..." << std::endl;
+              std::cout << "Waiting for the two orders to be filled..." << std::endl;
               sleep_for(millisecs(5000));
               bool isLongOrderComplete = isOrderComplete[res.idExchLong](params, longOrderId);
               bool isShortOrderComplete = isOrderComplete[res.idExchShort](params, shortOrderId);
@@ -614,16 +614,16 @@ int main(int argc, char** argv) {
               while (!isLongOrderComplete || !isShortOrderComplete) {
                 sleep_for(millisecs(3000));
                 if (!isLongOrderComplete) {
-                  logFile << "Long order on " << params.exchName[res.idExchLong] << " still open..." << std::endl;
+                  std::cout << "Long order on " << params.exchName[res.idExchLong] << " still open..." << std::endl;
                   isLongOrderComplete = isOrderComplete[res.idExchLong](params, longOrderId);
                 }
                 if (!isShortOrderComplete) {
-                  logFile << "Short order on " << params.exchName[res.idExchShort] << " still open..." << std::endl;
+                  std::cout << "Short order on " << params.exchName[res.idExchShort] << " still open..." << std::endl;
                   isShortOrderComplete = isOrderComplete[res.idExchShort](params, shortOrderId);
                 }
               }
               // Both orders are now fully executed
-              logFile << "Done" << std::endl;
+              std::cout << "Done" << std::endl;
 
               // Stores the partial result to file in case
               // the program exits before closing the position.
@@ -641,7 +641,7 @@ int main(int argc, char** argv) {
         }
       }
       if (params.verbose) {
-        logFile << std::endl;
+        std::cout << std::endl;
       }
     } else if (inMarket) {
       // We are in market and looking for an exit opportunity
@@ -658,16 +658,16 @@ int main(int argc, char** argv) {
         double limPriceLong = getLimitPrice[res.idExchLong](params, volumeLong, true);
         double limPriceShort = getLimitPrice[res.idExchShort](params, volumeShort, false);
         if (limPriceLong == 0.0 || limPriceShort == 0.0) {
-          logFile << "WARNING: Opportunity found but error with the order books (limit price is null). Trade canceled\n";
+          std::cout << "WARNING: Opportunity found but error with the order books (limit price is null). Trade canceled\n";
           logFile.precision(2);
-          logFile << "         Long limit price:  " << limPriceLong << std::endl;
-          logFile << "         Short limit price: " << limPriceShort << std::endl;
+          std::cout << "         Long limit price:  " << limPriceLong << std::endl;
+          std::cout << "         Short limit price: " << limPriceShort << std::endl;
           res.trailing[res.idExchLong][res.idExchShort] = 1.0;
         } else if (res.priceLongOut - limPriceLong > params.priceDeltaLim || limPriceShort - res.priceShortOut > params.priceDeltaLim) {
-          logFile << "WARNING: Opportunity found but not enough liquidity. Trade canceled\n";
+          std::cout << "WARNING: Opportunity found but not enough liquidity. Trade canceled\n";
           logFile.precision(2);
-          logFile << "         Target long price:  " << res.priceLongOut << ", Real long price:  " << limPriceLong << std::endl;
-          logFile << "         Target short price: " << res.priceShortOut << ", Real short price: " << limPriceShort << std::endl;
+          std::cout << "         Target long price:  " << res.priceLongOut << ", Real long price:  " << limPriceLong << std::endl;
+          std::cout << "         Target short price: " << res.priceShortOut << ", Real short price: " << limPriceShort << std::endl;
           res.trailing[res.idExchLong][res.idExchShort] = 1.0;
         } else {
           res.exitTime = currTime;
@@ -676,12 +676,12 @@ int main(int argc, char** argv) {
           res.printExitInfo(*params.logFile);
 
           logFile.precision(6);
-          logFile << params.leg1 << " exposure on " << params.exchName[res.idExchLong] << ": " << volumeLong << '\n'
+          std::cout << params.leg1 << " exposure on " << params.exchName[res.idExchLong] << ": " << volumeLong << '\n'
                   << params.leg1 << " exposure on " << params.exchName[res.idExchShort] << ": " << volumeShort << '\n'
                   << std::endl;
           auto longOrderId = sendLongOrder[res.idExchLong](params, "sell", fabs(btcUsed[res.idExchLong]), limPriceLong);
           auto shortOrderId = sendShortOrder[res.idExchShort](params, "buy", fabs(btcUsed[res.idExchShort]), limPriceShort);
-          logFile << "Waiting for the two orders to be filled..." << std::endl;
+          std::cout << "Waiting for the two orders to be filled..." << std::endl;
           sleep_for(millisecs(5000));
           bool isLongOrderComplete = isOrderComplete[res.idExchLong](params, longOrderId);
           bool isShortOrderComplete = isOrderComplete[res.idExchShort](params, shortOrderId);
@@ -689,15 +689,15 @@ int main(int argc, char** argv) {
           while (!isLongOrderComplete || !isShortOrderComplete) {
             sleep_for(millisecs(3000));
             if (!isLongOrderComplete) {
-              logFile << "Long order on " << params.exchName[res.idExchLong] << " still open..." << std::endl;
+              std::cout << "Long order on " << params.exchName[res.idExchLong] << " still open..." << std::endl;
               isLongOrderComplete = isOrderComplete[res.idExchLong](params, longOrderId);
             }
             if (!isShortOrderComplete) {
-              logFile << "Short order on " << params.exchName[res.idExchShort] << " still open..." << std::endl;
+              std::cout << "Short order on " << params.exchName[res.idExchShort] << " still open..." << std::endl;
               isShortOrderComplete = isOrderComplete[res.idExchShort](params, shortOrderId);
             }
           }
-          logFile << "Done\n" << std::endl;
+          std::cout << "Done\n" << std::endl;
           longOrderId  = "0";
           shortOrderId = "0";
           inMarket = false;
@@ -706,12 +706,12 @@ int main(int argc, char** argv) {
             balance[i].leg1After = getAvail[i](params, "btc"); // FIXME: currency hard-coded
           }
           for (int i = 0; i < numExch; ++i) {
-            logFile << "New balance on " << params.exchName[i] << ":  \t";
+            std::cout << "New balance on " << params.exchName[i] << ":  \t";
             logFile.precision(2);
-            logFile << balance[i].leg2After << " " << params.leg2 << " (perf " << balance[i].leg2After - balance[i].leg2 << "), ";
-            logFile << std::setprecision(6) << balance[i].leg1After << " " << params.leg1 << "\n";
+            std::cout << balance[i].leg2After << " " << params.leg2 << " (perf " << balance[i].leg2After - balance[i].leg2 << "), ";
+            std::cout << std::setprecision(6) << balance[i].leg1After << " " << params.leg1 << "\n";
           }
-          logFile << std::endl;
+          std::cout << std::endl;
           // Update total leg2 balance
           for (int i = 0; i < numExch; ++i) {
             res.leg2TotBalanceBefore += balance[i].leg2;
@@ -724,7 +724,7 @@ int main(int argc, char** argv) {
           }
           // Prints the result in the result CSV file
           logFile.precision(2);
-          logFile << "ACTUAL PERFORMANCE: " << "$" << res.leg2TotBalanceAfter - res.leg2TotBalanceBefore << " (" << res.actualPerf() * 100.0 << "%)\n" << std::endl;
+          std::cout << "ACTUAL PERFORMANCE: " << "$" << res.leg2TotBalanceAfter - res.leg2TotBalanceBefore << " (" << res.actualPerf() * 100.0 << "%)\n" << std::endl;
           csvFile << res.id << ","
                   << res.exchNameLong << ","
                   << res.exchNameShort << ","
@@ -738,7 +738,7 @@ int main(int argc, char** argv) {
           // Sends an email with the result of the trade
           if (params.sendEmail) {
             sendEmail(res, params);
-            logFile << "Email sent" << std::endl;
+            std::cout << "Email sent" << std::endl;
           }
           res.reset();
           // Removes restore.txt since this trade is done.
@@ -746,14 +746,14 @@ int main(int argc, char** argv) {
           resFile.close();
         }
       }
-      if (params.verbose) logFile << '\n';
+      if (params.verbose) std::cout << '\n';
     }
     // Moves to the next iteration, unless
     // the maxmum is reached.
     timeinfo.tm_sec += params.interval;
     currIteration++;
     if (currIteration >= params.debugMaxIteration) {
-      logFile << "Max iteration reached (" << params.debugMaxIteration << ")" <<std::endl;
+      std::cout << "Max iteration reached (" << params.debugMaxIteration << ")" <<std::endl;
       stillRunning = false;
     }
     // Exits if a 'stop_after_notrade' file is found
@@ -761,7 +761,7 @@ int main(int argc, char** argv) {
     // at the end, so Blackbird is not stopped by default.
     std::ifstream infile("stop_after_notrade");
     if (infile && !inMarket) {
-      logFile << "Exit after last trade (file stop_after_notrade found)\n";
+      std::cout << "Exit after last trade (file stop_after_notrade found)\n";
       stillRunning = false;
     }
   }
