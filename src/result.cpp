@@ -101,7 +101,7 @@ bool Result::loadPartialResult(std::string filename) {
 void Result::savePartialResult(std::string filename) {
   std::ofstream resFile(filename, std::ofstream::trunc);
 
-  std::cout << id << '\n'
+  resFile << id << '\n'
           << idExchLong << '\n'
           << idExchShort << '\n'
           << exchNameLong << '\n'
@@ -116,7 +116,7 @@ void Result::savePartialResult(std::string filename) {
           << leg2TotBalanceBefore << '\n'
           << exitTarget << '\n';
 
-  std::cout << maxSpread[idExchLong][idExchShort] << '\n'
+  resFile << maxSpread[idExchLong][idExchShort] << '\n'
           << minSpread[idExchLong][idExchShort] << '\n'
           << trailing[idExchLong][idExchShort] << '\n'
           << trailingWaitCount[idExchLong][idExchShort]
