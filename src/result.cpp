@@ -30,31 +30,31 @@ double Result::getTradeLengthInMinute() const {
 
 void Result::printEntryInfo(std::ostream &logFile) const {
   logFile.precision(2);
-  logFile << "\n[ ENTRY FOUND ]" << std::endl;
-  logFile << "   Date & Time:       "  << printDateTime(entryTime) << std::endl;
-  logFile << "   Exchange Long:     "  << exchNameLong <<  " (id " << idExchLong  << ")" << std::endl;
-  logFile << "   Exchange Short:    "  << exchNameShort << " (id " << idExchShort << ")" << std::endl;
-  logFile << "   Fees:              "  << feesLong * 100.0 << "% / " << feesShort * 100.0 << "%" << std::endl;
-  logFile << "   Price Long:        " << priceLongIn << " (target)" << std::endl;
-  logFile << "   Price Short:       " << priceShortIn << " (target)" << std::endl;
-  logFile << "   Spread:            "  << spreadIn * 100.0 << "%" << std::endl;
-  logFile << "   Cash used:         " << exposure << " on each exchange" << std::endl;
-  logFile << "   Exit Target:       "  << exitTarget * 100.0 << "%" << std::endl;
-  logFile << std::endl;
+  std::cout << "\n[ ENTRY FOUND ]" << std::endl;
+  std::cout << "   Date & Time:       "  << printDateTime(entryTime) << std::endl;
+  std::cout << "   Exchange Long:     "  << exchNameLong <<  " (id " << idExchLong  << ")" << std::endl;
+  std::cout << "   Exchange Short:    "  << exchNameShort << " (id " << idExchShort << ")" << std::endl;
+  std::cout << "   Fees:              "  << feesLong * 100.0 << "% / " << feesShort * 100.0 << "%" << std::endl;
+  std::cout << "   Price Long:        " << priceLongIn << " (target)" << std::endl;
+  std::cout << "   Price Short:       " << priceShortIn << " (target)" << std::endl;
+  std::cout << "   Spread:            "  << spreadIn * 100.0 << "%" << std::endl;
+  std::cout << "   Cash used:         " << exposure << " on each exchange" << std::endl;
+  std::cout << "   Exit Target:       "  << exitTarget * 100.0 << "%" << std::endl;
+  std::cout << std::endl;
 }
 
 void Result::printExitInfo(std::ostream &logFile) const {
   logFile.precision(2);
-  logFile << "\n[ EXIT FOUND ]" << std::endl;
-  logFile << "   Date & Time:       "  << printDateTime(exitTime) << std::endl;
-  logFile << "   Duration:          "  << getTradeLengthInMinute() << " minutes" << std::endl;
-  logFile << "   Price Long:        " << priceLongOut << " (target)" << std::endl;
-  logFile << "   Price Short:       " << priceShortOut << " (target)" << std::endl;
-  logFile << "   Spread:            "  << spreadOut * 100.0 << "%" << std::endl;
-  logFile << "   ---------------------------"  << std::endl;
-  logFile << "   Target Perf Long:  "  << targetPerfLong()  * 100.0 << "% (fees incl.)" << std::endl;
-  logFile << "   Target Perf Short: "  << targetPerfShort() * 100.0 << "% (fees incl.)" << std::endl;
-  logFile << "   ---------------------------\n"  << std::endl;
+  std::cout << "\n[ EXIT FOUND ]" << std::endl;
+  std::cout << "   Date & Time:       "  << printDateTime(exitTime) << std::endl;
+  std::cout << "   Duration:          "  << getTradeLengthInMinute() << " minutes" << std::endl;
+  std::cout << "   Price Long:        " << priceLongOut << " (target)" << std::endl;
+  std::cout << "   Price Short:       " << priceShortOut << " (target)" << std::endl;
+  std::cout << "   Spread:            "  << spreadOut * 100.0 << "%" << std::endl;
+  std::cout << "   ---------------------------"  << std::endl;
+  std::cout << "   Target Perf Long:  "  << targetPerfLong()  * 100.0 << "% (fees incl.)" << std::endl;
+  std::cout << "   Target Perf Short: "  << targetPerfShort() * 100.0 << "% (fees incl.)" << std::endl;
+  std::cout << "   ---------------------------\n"  << std::endl;
 }
 
 // not sure to understand how this function is implemented ;-)
@@ -101,7 +101,7 @@ bool Result::loadPartialResult(std::string filename) {
 void Result::savePartialResult(std::string filename) {
   std::ofstream resFile(filename, std::ofstream::trunc);
 
-  resFile << id << '\n'
+  std::cout << id << '\n'
           << idExchLong << '\n'
           << idExchShort << '\n'
           << exchNameLong << '\n'
@@ -116,7 +116,7 @@ void Result::savePartialResult(std::string filename) {
           << leg2TotBalanceBefore << '\n'
           << exitTarget << '\n';
 
-  resFile << maxSpread[idExchLong][idExchShort] << '\n'
+  std::cout << maxSpread[idExchLong][idExchShort] << '\n'
           << minSpread[idExchLong][idExchShort] << '\n'
           << trailing[idExchLong][idExchShort] << '\n'
           << trailingWaitCount[idExchLong][idExchShort]
